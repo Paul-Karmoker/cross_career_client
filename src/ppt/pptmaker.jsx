@@ -116,7 +116,7 @@ const PPTGenerator = () => {
     const toastId = toast.loading('Generating your presentation...');
 
     try {
-      const response = await axios.post('https://api.crosscareers.com/ppt/generate', {
+      const response = await axios.post('https://backend-server-deploy.onrender.com/ppt/generate', {
         content,
         slideCount: data.slideCount,
         design: data.design,
@@ -148,7 +148,7 @@ const PPTGenerator = () => {
     const toastId = toast.loading('Preparing PPTX download...');
     try {
       const response = await axios.get(
-        `https://api.crosscareers.com/ppt/download/pptx/${presentationId}`,
+        `https://backend-server-deploy.onrender.com/ppt/download/pptx/${presentationId}`,
         { responseType: 'blob' }
       );
       

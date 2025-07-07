@@ -130,7 +130,7 @@ const Match = () => {
     setError("");
     try {
       const response = await axios.post(
-        "https://api.crosscareers.com/ai/get-review",
+        "https://backend-server-deploy.onrender.com/ai/get-review",
         {
           prompt: `Job Description: ${jobText}\nResume: ${resumeText}`,
         },

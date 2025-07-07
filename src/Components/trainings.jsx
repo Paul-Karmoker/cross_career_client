@@ -8,7 +8,7 @@ function Trainings() {
       id: 1,
       name: 'Coursera',
       url: 'https://www.coursera.org/',
-      logo: '../train/course.png',
+      logo: 'https://i.ibb.co/0jFf2MhR/course.png',
       description: 'Professional certificates and degrees from top universities'
     },
     {

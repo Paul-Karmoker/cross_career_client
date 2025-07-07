@@ -55,7 +55,7 @@ const ExcelGenerator = () => {
       formData.append('formatInstructions', formatInstructions);
 
       // Using environment variable for API base URL with fallback
-      const apiBaseUrl = process.env.REACT_APP_API_URL || 'https://api.crosscareers.com';
+      const apiBaseUrl = process.env.REACT_APP_API_URL || 'https://backend-server-deploy.onrender.com';
       const response = await axios.post(
         `${apiBaseUrl}/excel/generate-excel`,
         formData,

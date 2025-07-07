@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import Navbar from './navbar';
 import Footer from './footer';
 
+
+
+
+
+
+
+
+
 function IntJobs() {
   const jobSites = [
     {
@@ -22,77 +30,80 @@ function IntJobs() {
       id: 3,
       name: 'Impactpool',
       url: 'https://www.impactpool.org/',
-      image: '../public/intjobs/2.png',
+      image: 'https://i.ibb.co/jv8cbx2g/2.png',
       category: 'International'
     },
     {
       id: 4,
       name: 'DEVEX',
       url: 'https://www.devex.com/jobs/search',
-      image: '../public/intjobs/1.png',
+      image: 'https://i.ibb.co/Fb7fDFcy/1.png',
       category: 'Development'
     },
     {
       id: 5,
       name: 'DevNetJOBS.org',
       url: 'https://devnetjobs.org/',
-      image: '../public/intjobs/3.png',
+      image: 'https://i.ibb.co/RGYL0pSn/3.png',
       category: 'Development'
     },
     {
       id: 6,
       name: 'Coordination SUD',
       url: 'https://www.coordinationsud.org/espace-emploi/',
-      image: '../public/intjobs/4.png',
+      image: 'https://i.ibb.co/99C7DbDq/4.png',
       category: 'Humanitarian'
     },
     {
       id: 7,
       name: 'UN Careers',
       url: 'https://careers.un.org/area-of-expertise?language=en',
-      image: '../public/intjobs/5.png',
+      image: 'https://i.ibb.co/wh8XwS8N/5.png',
       category: 'UN System'
     },
     {
       id: 8,
       name: 'Inspira',
       url: 'https://inspira.un.org/psp/PUNA1J/?cmd=login&languageCd=ENG',
-      image: '../public/intjobs/6.png',
+      image: '.https://i.ibb.co/V0WBGhY8/6.png',
       category: 'UN System'
     },
     {
       id: 9,
       name: 'UNjobs.org',
       url: 'https://unjobs.org/duty_stations/bangladesh',
-      image: '../public/intjobs/7.png',
+      image: 'https://i.ibb.co/1YSrQZx2/7.png',
       category: 'UN System'
     },
     {
       id: 10,
       name: 'Development Aid',
       url: 'https://www.developmentaid.org/jobs/search?sort=highlighted.desc,postedDate.desc&sectors=12',
-      image: '../public/intjobs/8.png',
+      image: 'https://i.ibb.co/23C6sgSD/8.png',
       category: 'Development'
     },
     {
       id: 11,
       name: 'UNjobs.net',
       url: 'https://www.unjobnet.org/',
-      image: '../public/intjobs/9.png',
+      image: 'https://i.ibb.co/hFTcMyN7/9.png',
       category: 'UN System'
     },
+    
+
+
     {
       id: 12,
       name: 'UN Talent',
-      url: 'https://untalent.org/jobs',
-      image: '../public/intjobs/10.png',
+      url: 'https://i.ibb.co/ZpwtNqn9/11.png',
+      image: 'https://i.ibb.co/3YvBcqhH/10.png',
       category: 'UN System'
     },
     {
       id: 13,
       name: 'Humanitarian Logistics Association',
       url: 'https://www.humanitarianlogistics.org/jobs?search=&selectMatch=0&selectCat=0&selectOrg%5B%5D=Church+World+Service&inp_start=all&sel_eventtype=&sel_restrict_attend=&selectRegion=&selectCountry=&sel_delivery_mode=&sel_event_fee=&selectRegion=&post_type=jobs&formsubmit=SEARCH',
-      image: '../public/intjobs/11.png',
+      image: 'https://i.ibb.co/3YvBcqhH/10.png',
       category: 'Humanitarian'
     }
   ];

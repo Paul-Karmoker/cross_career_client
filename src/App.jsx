@@ -2,7 +2,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { useGetWithdrawalsQuery } from './context/authApi';
-
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 // Public Components
 import Home from '../src/home/home';
 import Training from './Components/trainings';
@@ -65,12 +66,23 @@ const App = () => {
   const { isLoading } = useGetWithdrawalsQuery();
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <h1 className="text-2xl font-medium text-gray-700">Loading...</h1>
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md">
+        <div className="mb-4">
+          <Skeleton height={500} width={`200%`} />
+        </div>
+        <div className="space-y-3">
+          <Skeleton height={20} />
+          <Skeleton height={20} />
+          <Skeleton height={20} width="200%" />
+          <Skeleton height={50} />
+        </div>
       </div>
-    );
-  }
+    </div>
+
+  );
+}
 
   return (
     <>

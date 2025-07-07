@@ -14,8 +14,8 @@ const Footer = () => {
   const paymentMethods = [
     
     { icon: <img src="https://i.ibb.co/M5NmvgDZ/bkash-logo-png-seeklogo-382709.png" alt="Nagad"  /> },
-    { icon: <img src="https://i.ibb.co/kV1cts7H/Nagad-Logo-wine.png" alt="Rocket"  />},
-    { icon: <img src="https://i.ibb.co/5WpxCB80/dutch-bangla-rocket-logo-png-seeklogo-317692.png" alt="Visa"  /> },
+    { icon: <img src="https://i.ibb.co/VYt0Cxpb/Nagad-Logo-wine-1.png" alt="Rocket"  />},
+    { icon: <img src="https://i.ibb.co/GX5WMnv/dutch-bangla-rocket-logo-png-seeklogo-317692-1.png" alt="Visa"  /> },
   
   ];
 

@@ -120,7 +120,7 @@ const ContentGenerator = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('https://api.crosscareers.com/doc/generate-content', {
+      const response = await axios.post('https://backend-server-deploy.onrender.com/doc/generate-content', {
         ...data,
         sourceText: fileContent || data.userInput,
       });
@@ -145,7 +145,7 @@ const ContentGenerator = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('https://api.crosscareers.com/doc/generate-docx', {
+      const response = await axios.post('https://backend-server-deploy.onrender.com/doc/generate-docx', {
         content: previewContent,
         documentType: watch('contentType'),
         style: watch('tone')

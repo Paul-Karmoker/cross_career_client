@@ -4,8 +4,6 @@ import { FiUpload, FiMic, FiSkipForward, FiDownload, FiShare2, FiClock, FiBookOp
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import Webcam from 'react-webcam';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import Navbar from '../Components/navbar';
 import Footer from '../Components/footer';
 
@@ -35,7 +33,6 @@ const InterviewPractice = () => {
   const timerRef = useRef(null);
   const speechDetectionRef = useRef(null);
   const speechRecognitionRef = useRef(null);
-  const resultsRef = useRef(null);
   const speechSynthesisRef = useRef(null);
 
   // Form handling
@@ -84,32 +81,29 @@ const InterviewPractice = () => {
     try {
       setIsLoading(true);
       const formData = new FormData();
-      
-      if (file) {
-        formData.append('document', file);
-      } 
-      else if (data.jobDescription && data.jobDescription.trim() !== '') {
+      formData.append('practiceMode', practiceMode);
+
+      if (data.jobDescription && data.jobDescription.trim() !== '') {
         formData.append('jobDescription', data.jobDescription);
-      }
-      else {
+      } else if (file) {
+        formData.append('document', file);
+      } else {
         toast.error('Please provide either a job description or upload a document');
         setIsLoading(false);
         return;
       }
-      
-      formData.append('practiceMode', practiceMode);
-      
-      const response = await axios.post('https://api.crosscareers.com/insm/generate-questions', formData, {
+
+      const response = await axios.post('http://api.crosscareers.com/api/v1/insm/generate-questions', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       setQuestions(response.data.questions);
       setStep(2);
       startSpeechDetection();
       startTimer();
-      
+
       // Initialize virtual interviewer with first question
       if (showVirtualInterviewer && response.data.questions.length > 0) {
         speakQuestion(response.data.questions[0].question);
@@ -125,7 +119,7 @@ const InterviewPractice = () => {
   // Speak question through virtual interviewer
   const speakQuestion = (question) => {
     setVirtualInterviewerText(question);
-    
+
     // Check if speech synthesis is supported
     if (!isSpeechSynthesisSupported()) {
       console.warn('Speech synthesis not supported in this browser');
@@ -147,10 +141,10 @@ const InterviewPractice = () => {
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
       // Prefer female voices as they're often clearer for this use case
-      const preferredVoice = voices.find(voice => 
-        voice.lang.includes('en') && voice.name.includes('Female')
+      const preferredVoice = voices.find(voice =>
+        voice.lang.includes('en') && (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Google'))
       ) || voices[0];
-      
+
       utterance.voice = preferredVoice;
     }
 
@@ -184,37 +178,37 @@ const InterviewPractice = () => {
   // Speech detection setup without audio feedback
   const startSpeechDetection = () => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    
+
     if (!AudioContext) {
       console.warn('AudioContext not supported');
       return;
     }
-    
+
     const audioContext = new AudioContext();
-    
+
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         // Disable audio output to prevent feedback
         const audioStream = new MediaStream();
         stream.getAudioTracks().forEach(track => audioStream.addTrack(track));
-        
+
         const analyser = audioContext.createAnalyser();
         const microphone = audioContext.createMediaStreamSource(audioStream);
         const javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-        
+
         analyser.smoothingTimeConstant = 0.8;
         analyser.fftSize = 1024;
-        
+
         microphone.connect(analyser);
         analyser.connect(javascriptNode);
         javascriptNode.connect(audioContext.destination);
-        
-        speechDetectionRef.current = { 
+
+        speechDetectionRef.current = {
           audioContext,
           stream,
           javascriptNode
         };
-        
+
         javascriptNode.onaudioprocess = () => {
           const array = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteFrequencyData(array);
@@ -225,48 +219,50 @@ const InterviewPractice = () => {
       .catch(err => {
         console.error('Error setting up speech detection:', err);
       });
-      
-    // Improved speech recognition
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new speechRecognitionRef();
+
+    // Improved speech recognition (cross-browser)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-US';
       recognition.maxAlternatives = 3; // Get more alternatives for better accuracy
-      
+
       recognition.onresult = (event) => {
         let finalTranscript = '';
+        let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
+          const result = event.results[i];
+          if (result.isFinal) {
             // Use the most confident alternative
-            const alternatives = event.results[i][0].alternatives;
-            if (alternatives && alternatives.length > 0) {
-              // Sort by confidence and take the highest
+            const alternatives = Array.from(result);
+            if (alternatives.length > 0) {
               alternatives.sort((a, b) => b.confidence - a.confidence);
               finalTranscript += alternatives[0].transcript + ' ';
-            } else {
-              finalTranscript += transcript + ' ';
             }
+          } else {
+            interimTranscript += result[0].transcript;
           }
         }
-        
-        setTranscript(prev => prev + finalTranscript);
+        setTranscript(prev => prev + finalTranscript + interimTranscript);
       };
-      
+
       recognition.onerror = (event) => {
         console.error('Speech recognition error', event.error);
-        if (event.error === 'no-speech') {
-          recognition.start(); // Restart if no speech detected
+        if (event.error === 'no-speech' || event.error === 'network') {
+          recognition.start(); // Restart on common errors
         }
       };
-      
+
       recognition.onend = () => {
         recognition.start(); // Restart when ended
       };
-      
+
       speechRecognitionRef.current = recognition;
       recognition.start();
+    } else {
+      console.warn('Speech recognition not supported in this browser');
     }
   };
 
@@ -278,12 +274,12 @@ const InterviewPractice = () => {
       speechDetectionRef.current.stream.getTracks().forEach(track => track.stop());
       speechDetectionRef.current = null;
     }
-    
+
     if (speechRecognitionRef.current) {
       speechRecognitionRef.current.stop();
       speechRecognitionRef.current = null;
     }
-    
+
     stopSpeech();
   };
 
@@ -316,16 +312,16 @@ const InterviewPractice = () => {
   const submitAnswer = async () => {
     try {
       setIsLoading(true);
-      
-      const response = await axios.post('https://api.crosscareers.com/insm/submit-answer', {
+
+      const response = await axios.post('http://api.crosscareers.com/api/v1/insm/submit-answer', {
         question: questions[currentQuestionIndex].question,
         questionType: questions[currentQuestionIndex].type,
         transcript,
         timeSpent: timeElapsed
       });
-      
+
       setTranscript(response.data.transcript || transcript);
-      
+
       setProgress(prev => [...prev, {
         question: questions[currentQuestionIndex].question,
         type: questions[currentQuestionIndex].type,
@@ -345,16 +341,16 @@ const InterviewPractice = () => {
     if (isRecording) {
       await stopRecording();
     }
-    
+
     resetTimer();
-    
+
     if (currentQuestionIndex < questions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
       setTranscript('');
       setTimeElapsed(0);
       startTimer();
-      
+
       // Speak next question
       if (showVirtualInterviewer) {
         speakQuestion(questions[nextIndex].question);
@@ -368,22 +364,46 @@ const InterviewPractice = () => {
   const completeInterview = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('https://api.crosscareers.com/insm/complete', {
-        questions: questions.map((q, idx) => ({
-          question: q.question,
-          type: q.type,
-          index: idx
-        })),
+      const response = await axios.post('http://api.crosscareers.com/api/v1/insm/complete', {
+        questions,
         progress
       });
-      
+
       setAnalysis(response.data);
       setStep(3);
-      
-      await axios.post('https://api.crosscareers.com/insm/save-history', {
+
+      // Construct answers for save-history
+      const answers = response.data.questionAnalysis.map(qa => ({
+        question: qa.question,
+        questionType: questions.find(q => q.question === qa.question)?.type || 'technical',
+        transcript: qa.userAnswer,
+        score: qa.score,
+        feedback: qa.feedback,
+        suggestedAnswer: qa.suggestedAnswer,
+        timeSpent: progress.find(p => p.question === qa.question)?.timeSpent || 0
+      }));
+
+      await axios.post('http://api.crosscareers.com/api/v1/insm/save-history', {
+        userId: "507f1f77bcf86cd799439011",
+        jobDescription: jobDescription || '',
+        documentText: fileName ? `Uploaded document: ${fileName}` : '',
+        practiceMode,
         questions,
-        analysis: response.data,
-        date: new Date().toISOString()
+        answers,
+        overallScore: response.data.overallScore,
+        improvementSuggestions: response.data.improvementSuggestions,
+        commonQuestions: [
+          {
+            question: "Explain the concept of [relevant technology]...",
+            type: "technical",
+            category: "Technology Fundamentals"
+          },
+          {
+            question: "Describe a time when you had a conflict with a team member...",
+            type: "scenario",
+            category: "Teamwork"
+          }
+        ]
       });
     } catch (error) {
       toast.error('Failed to complete interview. Please try again.');
@@ -395,40 +415,30 @@ const InterviewPractice = () => {
     }
   };
 
-  // Download results as PDF
+  // Download results as PDF via API
   const downloadResults = async () => {
     try {
       setIsLoading(true);
-      
-      // Create PDF using html2canvas and jsPDF
-      const input = resultsRef.current;
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
+
+      const fullTranscript = progress.map(p => p.transcript).join(' ... ');
+
+      const response = await axios.post('http://api.crosscareers.com/api/v1/insm/download-results', {
+        analysis,
+        questions,
+        transcript: fullTranscript
+      }, {
+        responseType: 'blob'
       });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      
-      pdf.save('interview-results.pdf');
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'interview-results.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (error) {
-      toast.error('Failed to generate PDF. Please try again.');
+      toast.error('Failed to download results. Please try again.');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -440,7 +450,7 @@ const InterviewPractice = () => {
       if (navigator.share) {
         await navigator.share({
           title: 'My Interview Results',
-          text: `I scored ${analysis.overallScore}% on my interview practice!`,
+          text: `I scored ${analysis?.overallScore}% on my interview practice!`,
           url: window.location.href
         });
       } else {
@@ -475,7 +485,7 @@ const InterviewPractice = () => {
       window.speechSynthesis.onvoiceschanged = () => {
         console.log('Voices loaded');
       };
-      
+
       // Force voices to load
       window.speechSynthesis.getVoices();
     }
@@ -483,402 +493,386 @@ const InterviewPractice = () => {
 
   return (
     <>
-    <Navbar/>
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 mt-20">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="p-6 md:p-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">Interview Practice</h1>
-          
-          {/* Step 1: Input Job Description or Upload Document */}
-          {step === 1 && (
-            <form onSubmit={handleSubmit(generateQuestions)} className="space-y-6">
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-gray-800">Practice Mode</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setPracticeMode('full')}
-                    className={`p-4 border rounded-lg transition-all ${practiceMode === 'full' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-300'}`}
-                  >
-                    <div className="flex flex-col items-center">
-                      <FiAward className="w-6 h-6 mb-2 text-blue-600" />
-                      <span className="font-medium">Full Mock</span>
-                      <span className="text-sm text-gray-600">3 Tech + 2 Scenario</span>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPracticeMode('technical')}
-                    className={`p-4 border rounded-lg transition-all ${practiceMode === 'technical' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-300'}`}
-                  >
-                    <div className="flex flex-col items-center">
-                      <FiBookOpen className="w-6 h-6 mb-2 text-blue-600" />
-                      <span className="font-medium">Technical Only</span>
-                      <span className="text-sm text-gray-600">5 Questions</span>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPracticeMode('scenario')}
-                    className={`p-4 border rounded-lg transition-all ${practiceMode === 'scenario' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-300'}`}
-                  >
-                    <div className="flex flex-col items-center">
-                      <FiClock className="w-6 h-6 mb-2 text-blue-600" />
-                      <span className="font-medium">Scenario Only</span>
-                      <span className="text-sm text-gray-600">5 Questions</span>
-                    </div>
-                  </button>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6 mt-20">
+        <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden ring-1 ring-gray-200">
+          <div className="p-6 md:p-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center tracking-tight">Interview Practice Simulator</h1>
+
+            {/* Step 1: Input Job Description or Upload Document */}
+            {step === 1 && (
+              <form onSubmit={handleSubmit(generateQuestions)} className="space-y-8">
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold text-gray-900">Select Practice Mode</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPracticeMode('full')}
+                      className={`p-6 border-2 rounded-xl transition-all duration-200 transform hover:scale-105 ${practiceMode === 'full' ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 hover:border-blue-300'}`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <FiAward className="w-8 h-8 mb-3 text-blue-600" />
+                        <span className="font-semibold text-gray-900">Full Mock Interview</span>
+                        <span className="text-sm text-gray-500 mt-1">3 Technical + 2 Scenario Questions</span>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPracticeMode('technical')}
+                      className={`p-6 border-2 rounded-xl transition-all duration-200 transform hover:scale-105 ${practiceMode === 'technical' ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 hover:border-blue-300'}`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <FiBookOpen className="w-8 h-8 mb-3 text-blue-600" />
+                        <span className="font-semibold text-gray-900">Technical Focus</span>
+                        <span className="text-sm text-gray-500 mt-1">5 Technical Questions</span>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPracticeMode('scenario')}
+                      className={`p-6 border-2 rounded-xl transition-all duration-200 transform hover:scale-105 ${practiceMode === 'scenario' ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 hover:border-blue-300'}`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <FiClock className="w-8 h-8 mb-3 text-blue-600" />
+                        <span className="font-semibold text-gray-900">Scenario Focus</span>
+                        <span className="text-sm text-gray-500 mt-1">5 Scenario Questions</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Paste Job Description
-                </label>
-                <textarea
-                  {...register('jobDescription')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={4}
-                  placeholder="Paste the job description here..."
-                />
-              </div>
-              
-              <div className="text-center text-gray-500 font-medium">OR</div>
-              
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Upload Document (PDF, DOCX, TXT)
-                </label>
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden">
-                    {!fileName ? (
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
-                        <p className="mb-2 text-sm text-gray-500">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">PDF, DOCX, TXT (MAX. 5MB)</p>
-                      </div>
-                    ) : (
-                      <div className="p-4 text-center">
-                        <div className="flex items-center justify-center mb-2">
-                          <FiUpload className="w-6 h-6 text-blue-500" />
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Paste Job Description
+                  </label>
+                  <textarea
+                    {...register('jobDescription')}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition duration-200"
+                    rows={4}
+                    placeholder="Paste the job description here..."
+                  />
+                </div>
+
+                <div className="text-center text-gray-600 font-semibold">OR</div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Upload Document (PDF, DOCX, TXT)
+                  </label>
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200 relative overflow-hidden shadow-sm">
+                      {!fileName ? (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <FiUpload className="w-10 h-10 mb-4 text-gray-500" />
+                          <p className="mb-2 text-sm text-gray-600 font-medium">
+                            <span className="text-blue-600">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">PDF, DOCX, TXT (Max 5MB)</p>
                         </div>
-                        <p className="text-sm font-medium text-gray-700 truncate max-w-xs">{fileName}</p>
-                        {isUploading && (
-                          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-3">
-                            <div 
-                              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                              style={{ width: `${uploadProgress}%` }}
-                            ></div>
+                      ) : (
+                        <div className="p-4 text-center">
+                          <div className="flex items-center justify-center mb-2">
+                            <FiUpload className="w-6 h-6 text-blue-600" />
                           </div>
-                        )}
-                      </div>
-                    )}
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-xs">{fileName}</p>
+                          {isUploading && (
+                            <div className="w-full bg-gray-200 rounded-full h-1.5 mt-3">
+                              <div
+                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                style={{ width: `${uploadProgress}%` }}
+                              ></div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <input
+                        {...register('document')}
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.docx,.txt"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </div>
+
+                  {fileName && (
+                    <div className="mt-3 flex items-center justify-between px-2">
+                      <span className="text-sm font-medium text-gray-700 flex items-center">
+                        <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {fileName}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFileName('');
+                          setFile(null);
+                          setValue('document', null);
+                          setUploadProgress(0);
+                        }}
+                        className="text-red-600 hover:text-red-700 text-sm font-medium transition duration-200"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+
+                  {(jobDescription || fileName) && (
+                    <p className="mt-2 text-sm text-gray-500 italic">
+                      Note: Job description text takes priority if both are provided.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <label className="inline-flex items-center cursor-pointer">
                     <input
-                      {...register('document')}
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.docx,.txt"
-                      onChange={handleFileChange}
+                      type="checkbox"
+                      checked={showVirtualInterviewer}
+                      onChange={(e) => setShowVirtualInterviewer(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm"
                     />
+                    <span className="ml-2 text-gray-700 font-medium">Enable AI Virtual Interviewer</span>
                   </label>
                 </div>
-                
-                {fileName && (
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700 flex items-center">
-                      <svg className="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {fileName}
-                    </span>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setFileName('');
-                        setFile(null);
-                        setValue('document', null);
-                        setUploadProgress(0);
-                      }}
-                      className="text-red-500 hover:text-red-700 text-sm font-medium"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-                
-                {jobDescription && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    Note: If both fields are filled, the job description text will be prioritized.
-                  </p>
-                )}
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showVirtualInterviewer}
-                    onChange={(e) => setShowVirtualInterviewer(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-gray-700">Enable Virtual Interviewer</span>
-                </label>
-              </div>
-              
-              <button
-                type="submit"
-                disabled={isLoading || (!jobDescription && !file)}
-                className={`w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200 ${
-                  (isLoading || (!jobDescription && !file)) ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isLoading ? 'Generating Questions...' : 'Start Practice'}
-              </button>
-            </form>
-          )}
-          
-          {/* Step 2: Interview Session */}
-          {step === 2 && questions.length > 0 && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Question {currentQuestionIndex + 1} of {questions.length}
-                  <span className="ml-2 text-sm font-normal text-gray-500">
-                    ({questions[currentQuestionIndex].type === 'technical' ? 'Technical' : 'Scenario'})
-                  </span>
-                </h2>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${isSpeaking ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    <FiMic className="inline mr-1" />
-                    {isSpeaking ? 'Speaking' : 'Silent'}
-                  </span>
-                  <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-                    {formatTime(timeElapsed)}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                  {showVirtualInterviewer && (
-                    <div className="mb-4 flex items-center space-x-3 bg-white p-3 rounded-lg shadow-sm">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-bold">AI</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-gray-700 animate-fade-in">
-                          {virtualInterviewerText}
-                          {isSpeakingAI && (
-                            <span className="ml-2 inline-flex items-center">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse mx-0.5"></span>
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse mx-0.5" style={{ animationDelay: '0.2s' }}></span>
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse mx-0.5" style={{ animationDelay: '0.4s' }}></span>
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="mb-4">
-                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                      {questions[currentQuestionIndex].type === 'technical' ? 'Technical' : 'Scenario-Based'}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-800 mb-4">
-                    {questions[currentQuestionIndex].question}
-                  </h3>
-                  
-                  <div className="mt-6">
-                    <label className="block text-gray-700 font-medium mb-2">
-                      Your Answer Transcript
-                    </label>
-                    <textarea
-                      value={transcript}
-                      onChange={(e) => setTranscript(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={4}
-                      placeholder="Your answer will appear here as you speak..."
-                    />
-                  </div>
-                </div>
-                
-                <div className="bg-gray-900 rounded-lg overflow-hidden relative aspect-video">
-                  <Webcam
-                    ref={webcamRef}
-                    audio={false} // Disable audio to prevent feedback
-                    videoConstraints={videoConstraints}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                    <button
-                      onClick={isRecording ? stopRecording : startRecording}
-                      className={`flex items-center justify-center p-3 rounded-full shadow-lg ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-white hover:bg-gray-100'} transition duration-200`}
-                    >
-                      {isRecording ? (
-                        <span className="w-5 h-5 bg-white rounded-sm"></span>
-                      ) : (
-                        <FiMic className="w-5 h-5 text-gray-800" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center pt-4">
-                <div className="text-sm text-gray-500">
-                  {isRecording ? (
-                    <span className="flex items-center">
-                      <span className="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
-                      Recording...
-                    </span>
-                  ) : (
-                    'Press the microphone button to start recording your answer'
-                  )}
-                </div>
-                
+
                 <button
-                  onClick={nextQuestion}
-                  disabled={isLoading}
-                  className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200 disabled:opacity-50"
+                  type="submit"
+                  disabled={isLoading || (!jobDescription && !file)}
+                  className={`w-full py-4 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-200 shadow-md ${
+                    (isLoading || (!jobDescription && !file)) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Complete Interview'}
-                  <FiSkipForward className="ml-2" />
+                  {isLoading ? 'Generating Questions...' : 'Start Practice Session'}
                 </button>
-              </div>
-            </div>
-          )}
-          
-          {/* Step 3: Results */}
-          {step === 3 && analysis && (
-            <div ref={resultsRef} className="space-y-8 p-4 bg-white">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Interview Results</h2>
-                <p className="text-gray-600">Here&apos;s your performance analysis and feedback</p>
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-blue-800 mb-4">Overall Score</h3>
-                <div className="flex items-center justify-center mb-4">
-                  <div className="relative w-32 h-32">
-                    <svg className="w-full h-full" viewBox="0 0 36 36">
-                      <path
-                        d="M18 2.0845
-                          a 15.9155 15.9155 0 0 1 0 31.831
-                          a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="#E5E7EB"
-                        strokeWidth="3"
-                      />
-                      <path
-                        d="M18 2.0845
-                          a 15.9155 15.9155 0 0 1 0 31.831
-                          a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke={analysis.overallScore >= 95 ? '#10B981' : analysis.overallScore >= 80 ? '#3B82F6' : '#EF4444'}
-                        strokeWidth="3"
-                        strokeDasharray={`${analysis.overallScore}, 100`}
-                      />
-                    </svg>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                      <span className="text-2xl font-bold text-gray-800">{analysis.overallScore}%</span>
-                    </div>
+              </form>
+            )}
+
+            {/* Step 2: Interview Session */}
+            {step === 2 && questions.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Question {currentQuestionIndex + 1} / {questions.length}
+                    <span className="ml-2 text-sm font-medium text-gray-500">
+                      ({questions[currentQuestionIndex].type.charAt(0).toUpperCase() + questions[currentQuestionIndex].type.slice(1)})
+                    </span>
+                  </h2>
+                  <div className="flex items-center space-x-3">
+                    <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center ${isSpeaking ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      <FiMic className="mr-1.5" />
+                      {isSpeaking ? 'Speaking' : 'Silent'}
+                    </span>
+                    <span className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
+                      {formatTime(timeElapsed)}
+                    </span>
                   </div>
                 </div>
-                <p className="text-center text-gray-700">
-                  {analysis.overallScore >= 95 ? 'Excellent! You have strong knowledge in this area.' : 
-                   analysis.overallScore >= 80 ? 'Good job! You have solid understanding but room for improvement.' : 
-                   'Keep practicing! Review the suggested answers to improve.'}
-                </p>
-              </div>
-              
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-800">Detailed Feedback</h3>
-                
-                {analysis.questionAnalysis.map((item, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-medium text-gray-800">{item.question}</h4>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.score >= 90 ? 'bg-green-100 text-green-800' : 
-                        item.score >= 70 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {item.score}%
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
+                    {showVirtualInterviewer && (
+                      <div className="mb-6 flex items-start space-x-4 bg-white p-4 rounded-xl shadow-md">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-blue-600 font-bold text-lg">AI</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-gray-800 font-medium text-lg animate-fade-in">
+                            {virtualInterviewerText}
+                            {isSpeakingAI && (
+                              <span className="ml-3 inline-flex items-center space-x-1">
+                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mb-4">
+                      <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                        {questions[currentQuestionIndex].type === 'technical' ? 'Technical Question' : 'Scenario-Based Question'}
                       </span>
                     </div>
-                    
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-gray-700 mb-1">Your Answer:</p>
-                      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">{item.userAnswer || 'No transcript available'}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                      {questions[currentQuestionIndex].question}
+                    </h3>
+
+                    <div className="mt-6">
+                      <label className="block text-gray-700 font-semibold mb-2">
+                        Your Real-Time Transcript
+                      </label>
+                      <textarea
+                        value={transcript}
+                        onChange={(e) => setTranscript(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition duration-200"
+                        rows={5}
+                        placeholder="Your spoken answer will appear here in real-time..."
+                      />
                     </div>
-                    
-                    {item.score < 95 && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Suggested Answer:</p>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">{item.suggestedAnswer}</p>
-                      </div>
-                    )}
-                    
-                    {item.feedback && (
-                      <div className="mt-3">
-                        <p className="text-sm font-medium text-gray-700 mb-1">Feedback:</p>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">{item.feedback}</p>
-                      </div>
+                  </div>
+
+                  <div className="bg-gray-900 rounded-2xl overflow-hidden relative aspect-video shadow-lg">
+                    <Webcam
+                      ref={webcamRef}
+                      audio={false} // Disable audio to prevent feedback
+                      videoConstraints={videoConstraints}
+                      className="w-full h-full object-cover"
+                    />
+
+                    <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+                      <button
+                        onClick={isRecording ? stopRecording : startRecording}
+                        className={`flex items-center justify-center p-4 rounded-full shadow-xl transition duration-200 transform hover:scale-110 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-white hover:bg-gray-100'}`}
+                      >
+                        {isRecording ? (
+                          <span className="w-6 h-6 bg-white rounded"></span>
+                        ) : (
+                          <FiMic className="w-6 h-6 text-gray-800" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-6">
+                  <div className="text-sm text-gray-600 font-medium">
+                    {isRecording ? (
+                      <span className="flex items-center">
+                        <span className="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></span>
+                        Recording in progress...
+                      </span>
+                    ) : (
+                      'Click the microphone to begin recording your response'
                     )}
                   </div>
-                ))}
+
+                  <button
+                    onClick={nextQuestion}
+                    disabled={isLoading}
+                    className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-200 shadow-md disabled:opacity-50"
+                  >
+                    {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Complete Session'}
+                    <FiSkipForward className="ml-2" />
+                  </button>
+                </div>
               </div>
-              
-              <div className="pt-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Improvement Suggestions</h3>
-                <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                  {analysis.improvementSuggestions.map((suggestion, index) => (
-                    <li key={index}>{suggestion}</li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="flex justify-center pt-6 space-x-4">
-                <button
-                  onClick={downloadResults}
-                  disabled={isLoading}
-                  className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200 disabled:opacity-50"
-                >
-                  <FiDownload className="mr-2" />
-                  Download Report
-                </button>
-                
-                <button
-                  onClick={shareResults}
-                  disabled={isLoading}
-                  className="flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition duration-200 disabled:opacity-50"
-                >
-                  <FiShare2 className="mr-2" />
-                  Share Results
-                </button>
-              </div>
-              
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Question Bank</h3>
-                <p className="text-gray-600 mb-4">Practice these common questions to improve your skills:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {analysis.commonQuestions?.map((q, i) => (
-                    <div key={i} className="bg-white p-3 rounded-lg border border-gray-200">
-                      <p className="font-medium">{q.question}</p>
-                      <p className="text-sm text-gray-500 mt-1">{q.category}</p>
+            )}
+
+            {/* Step 3: Results */}
+            {step === 3 && analysis && (
+              <div className="space-y-8 p-4">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Interview Results</h2>
+                  <p className="text-gray-600 text-lg">Detailed performance analysis and actionable feedback</p>
+                </div>
+
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-8 shadow-md">
+                  <h3 className="text-xl font-semibold text-blue-900 mb-6 text-center">Overall Performance Score</h3>
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="relative w-40 h-40">
+                      <svg className="w-full h-full" viewBox="0 0 36 36">
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="#E5E7EB"
+                          strokeWidth="3"
+                        />
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke={analysis.overallScore >= 95 ? '#10B981' : analysis.overallScore >= 80 ? '#3B82F6' : '#EF4444'}
+                          strokeWidth="3"
+                          strokeDasharray={`${analysis.overallScore}, 100`}
+                          className="transition-all duration-500"
+                        />
+                      </svg>
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                        <span className="text-3xl font-bold text-gray-900">{analysis.overallScore}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-center text-gray-700 text-lg font-medium">
+                    {analysis.overallScore >= 95 ? 'Outstanding! You demonstrate expert-level skills.' :
+                     analysis.overallScore >= 80 ? 'Well done! Solid performance with minor areas for refinement.' :
+                     'Good effort! Focus on the feedback to boost your score next time.'}
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-gray-900">In-Depth Feedback</h3>
+
+                  {analysis.questionAnalysis.map((item, index) => (
+                    <div key={index} className="border border-gray-200 rounded-2xl p-6 shadow-sm transition duration-200 hover:shadow-md">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-semibold text-gray-900 text-lg">{item.question}</h4>
+                        <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                          item.score >= 90 ? 'bg-green-100 text-green-800' :
+                          item.score >= 70 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {item.score}%
+                        </span>
+                      </div>
+
+                      <div className="mb-4">
+                        <p className="text-sm font-semibold text-gray-700 mb-1">Your Response:</p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl">{item.userAnswer || 'No transcript captured'}</p>
+                      </div>
+
+                      {item.score < 95 && (
+                        <div className="mb-4">
+                          <p className="text-sm font-semibold text-gray-700 mb-1">Suggested Model Answer:</p>
+                          <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl">{item.suggestedAnswer}</p>
+                        </div>
+                      )}
+
+                      {item.feedback && (
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700 mb-1">Personalized Feedback:</p>
+                          <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl">{item.feedback}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+
+                <div className="pt-4">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Key Improvement Areas</h3>
+                  <ul className="list-disc pl-6 space-y-3 text-gray-700 text-lg">
+                    {analysis.improvementSuggestions.map((suggestion, index) => (
+                      <li key={index} className="leading-relaxed">{suggestion}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex justify-center pt-8 space-x-6">
+                  <button
+                    onClick={downloadResults}
+                    disabled={isLoading}
+                    className="flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-200 shadow-md disabled:opacity-50"
+                  >
+                    <FiDownload className="mr-2" />
+                    Download PDF Report
+                  </button>
+
+                  <button
+                    onClick={shareResults}
+                    disabled={isLoading}
+                    className="flex items-center px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-xl transition duration-200 shadow-md disabled:opacity-50"
+                  >
+                    <FiShare2 className="mr-2" />
+                    Share Results
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
-    <Footer/>
+      <Footer />
     </>
   );
 };

@@ -1,4 +1,3 @@
-import React from 'react';
 import Navbar from './navbar';
 import Footer from './footer';
 
@@ -8,7 +7,7 @@ function BdJobs() {
       id: 1,
       name: 'BDJOBS',
       url: 'https://bdjobs.com/',
-      logo: '../public/bdjobs/bdjobs.png'
+      logo: 'https://i.ibb.co/Qv0BH1gF/bdjobs.png'
     },
     {
       id: 2,
@@ -44,43 +43,43 @@ function BdJobs() {
       id: 7,
       name: 'Careerjet',
       url: 'https://www.careerjet.com.bd/',
-      logo: '../public/bdjobs/career jet.png'
+      logo: 'https://i.ibb.co/jZrCpSTf/career-Jet.png'
     },
     {
       id: 8,
       name: 'Shomvob',
       url: 'https://shomvob.com/',
-      logo: '../public/bdjobs/shomvob.png'
+      logo: 'https://i.ibb.co/B5fwpbKm/shomvob.png'
     },
     {
       id: 9,
       name: 'Bikroy Jobs',
       url: 'https://bikroy.com/en/ads/bangladesh/jobs',
-      logo: '../public/bdjobs/bikroy.png'
+      logo: 'https://i.ibb.co/vC8NR6Fp/bikroy.png'
     },
     {
       id: 10,
       name: 'BDJobsToday',
       url: 'https://www.bdjobstoday.com/',
-      logo: '../public/bdjobs/4.png'
+      logo: 'https://i.ibb.co/237LkdxQ/4.png'
     },
     {
       id: 11,
       name: 'Chakri.com.bd',
       url: 'https://chkri.com/',
-      logo: '../public/bdjobs/5.png'
+      logo: 'https://i.ibb.co/fd7pGq5F/5.png'
     },
     {
       id: 12,
       name: 'BDjobsLive',
       url: 'https://www.bdjobslive.com/',
-      logo: '../public/bdjobs/6.png'
+      logo: 'https://i.ibb.co/CKB8Bc1Y/6.png'
     },
     {
       id: 13,
       name: 'NRBJobs',
       url: 'https://www.nrbjobs.com/',
-      logo: '../public/bdjobs/7.png'
+      logo: 'https://i.ibb.co/Kjm0bxhB/7.png'
     }
   ];
 

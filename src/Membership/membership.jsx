@@ -23,10 +23,10 @@ const Membership = () => {
     paid: {
       title: "Premium",
       prices: { 
-        monthly: "52", 
-        quarterly: "150 (Save 6)", 
-        halfYearly: "270 (Save 42)",
-        yearly: "490 (Save 134)" 
+        monthly: "79", 
+        quarterly: "230 (Save 7)", 
+        halfYearly: "450 (Save 24)",
+        yearly: "750 (Save 198)" 
       },
       features: [
         "Full content access",
@@ -135,7 +135,7 @@ const Membership = () => {
                     ) : (
                       <>
                         ৳{option.prices[billingCycle].split(" ")[0]}
-                        <span className="text-xl font-normal">/mo</span>
+                        <span className="text-xl font-normal"></span>
                       </>
                     )}
                   </p>

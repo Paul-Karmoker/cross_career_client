@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import axios from "axios";
 import { jsPDF } from "jspdf";
@@ -41,6 +41,7 @@ const Match = () => {
           reject(new Error("Failed to extract text from PDF"));
         }
       };
+      // eslint-disable-next-line no-unused-vars
       reader.onerror = (error) => {
         reject(new Error("Failed to read file"));
       };
@@ -62,6 +63,7 @@ const Match = () => {
           reject(new Error("Failed to extract text from DOCX"));
         }
       };
+      // eslint-disable-next-line no-unused-vars
       reader.onerror = (error) => {
         reject(new Error("Failed to read file"));
       };
@@ -130,7 +132,7 @@ const Match = () => {
     setError("");
     try {
       const response = await axios.post(
-        "https://backend-server-deploy.onrender.com/ai/get-review",
+        "http://api.crosscareers.com/api/v1/ai/get-review",
         {
           prompt: `Job Description: ${jobText}\nResume: ${resumeText}`,
         },

@@ -1,4 +1,3 @@
-import React from 'react';
 import Navbar from './navbar';
 import Footer from './footer';
 
@@ -8,31 +7,31 @@ function DonorOrganizations() {
       id: 1,
       name: 'ECHO',
       url: 'https://civil-protection-humanitarian-aid.ec.europa.eu/who/jobs-and-opportunities_en',
-      logo: '../public/donor/1.png'
+      logo: 'https://i.ibb.co/s4DZWnr/1.png'
     },
     {
       id: 2,
       name: 'FCDO',
       url: 'https://fco.tal.net/vx/lang-en-GB/mobile-0/appcentre-ext/brand-2/xf-ba80fc1e6921/candidate/jobboard/vacancy/1/adv/?f_Item_Opportunity_15689_lk=1739',
-      logo: '../public/donor/2.png'
+      logo: 'https://i.ibb.co/yczFfgvs/2.png'
     },
     {
       id: 3,
       name: 'Australian Government - DFAT',
       url: 'https://www.dfat.gov.au/careers',
-      logo: '../public/donor/2.png'
+      logo: 'https://i.ibb.co/fdKXtZbR/3.png'
     },
     {
       id: 4,
       name: 'Australian Council for International Development',
       url: 'https://acfid.asn.au/jobsa',
-      logo: '../public/donor/4.png'
+      logo: 'https://i.ibb.co/CKHrVfbw/4.png'
     },
     {
       id: 5,
       name: 'Norwegian Aid - NORAD',
       url: 'https://www.norad.no/en/careers/careers/',
-      logo: '../public/donor/5.png'
+      logo: 'https://i.ibb.co/ynfwTrgv/5.png'
     },
     {
       id: 6,
@@ -50,85 +49,85 @@ function DonorOrganizations() {
       id: 8,
       name: 'European Union External Actions (EEAS)',
       url: 'https://www.eeas.europa.eu/eeas/vacancies_en',
-      logo: '../public/donor/8.png'
+      logo: 'https://i.ibb.co/FLWWMJD8/8.png'
     },
     {
       id: 9,
       name: 'Green Climate Fund',
       url: 'https://jobs.greenclimate.fund/?_gl=1*pcx20g*_ga*OTYyODYwNS4xNzM5OTc2Mzc2*_ga_1G93H3NSBL*MTc0MTYyMzc0My4xLjEuMTc0MTYyMzgxOS4wLjAuMA..',
-      logo: '../public/donor/9.png'
+      logo: 'https://i.ibb.co/CKxVtgQW/9.png'
     },
     {
       id: 10,
       name: 'Luxembourg Development Agency',
       url: 'https://luxdev.lu/en/recruitment/definitions',
-      logo: '../public/donor/10.png'
+      logo: 'https://i.ibb.co/N2kBxjtk/10.png'
     },
     {
       id: 11,
       name: 'Agency for Agricultural Development of Morocco',
       url: 'https://www.ada.gov.ma/en/recruitment/Appel%20%C3%A0%20candidature',
-      logo: '../public/donor/11.png'
+      logo: 'https://i.ibb.co/WNTg4wJk/11.png'
     },
     {
       id: 12,
       name: 'Asian Development Bank',
       url: 'https://www.adb.org/work-with-us/careers/current-opportunities',
-      logo: '../public/donor/12.png'
+      logo: 'https://i.ibb.co/5grkDcGp/12.pn'
     },
     {
       id: 13,
       name: 'Asian Infrastructure Investment Bank',
       url: 'https://www.aiib.org/en/opportunities/career/job-vacancies/staff/index.html',
-      logo: '../public/donor/13.png'
+      logo: 'https://i.ibb.co/60HCXXBQ/13.png'
     },
     {
       id: 14,
       name: 'Bhutan Trust Fund',
       url: 'https://www.bhutantrustfund.bt/public_page/announcement_details/27',
-      logo: '../public/donor/14.png'
+      logo: 'https://i.ibb.co/7cBwnY2/14.png'
     },
     {
       id: 15,
       name: 'Conservation International Fund',
       url: 'https://www.conservation.org/about/conservation-international-jobs',
-      logo: '../public/donor/15.png'
+      logo: 'https://i.ibb.co/Q7GmTX9N/15.png'
     },
     {
       id: 16,
       name: 'GIZ Bangladesh',
       url: 'https://www.giz.de/en/jobs/giz_job_opportunities.html',
-      logo: '../public/donor/16.png'
+      logo: 'https://i.ibb.co/S7wmdCR4/16.png'
     },
     {
       id: 17,
       name: 'European Investment Bank',
       url: 'https://www.eib.org/en/about/careers/index',
-      logo: '../public/donor/17.png'
+      logo: 'https://i.ibb.co/kg1W0ZsD/17.png'
     },
     {
       id: 18,
       name: 'Enabel - Belgian Development Agency',
       url: 'https://www.enabel.be/work-with-us/',
-      logo: '../public/donor/18.png'
+      logo: 'https://i.ibb.co/08vWdLz/18.png'
     },
     {
       id: 19,
       name: 'European Bank for Reconstruction and Development',
       url: 'https://www.ebrd.com/careers-at-the-ebrd.html',
-      logo: '../public/donor/19.png'
+      logo: 'https://i.ibb.co/BHSLBcBf/19.png'
     },
     {
       id: 20,
       name: 'World Bank Group',
       url: 'https://worldbankgroup.csod.com/ux/ats/careersite/1/home?c=worldbankgroup',
-      logo: '../public/donor/20.png'
+      logo: 'https://i.ibb.co/zWfXx9qN/20.png'
     },
     {
       id: 21,
       name: 'International Finance Corporation',
       url: 'https://www.ifc.org/en/about/careers',
-      logo: '../public/donor/21.png'
+      logo: 'https://i.ibb.co/dshFzzcn/21.png'
     }
   ];
 

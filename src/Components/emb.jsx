@@ -8,79 +8,79 @@ function EmbassyJobs() {
       id: 1,
       name: 'Embassy of Brazil',
       url: 'https://www.gov.br',
-      logo: '../public/emb/1.png'
+      logo: 'https://i.ibb.co/9k4XkfTC/1.png'
     },
     {
       id: 2,
       name: 'Embassy of Japan',
       url: 'https://www.bd.emb-japan.go.jp/itpr_en/11_000001_00635.html',
-      logo: '../public/emb/2.png'
+      logo: 'https://i.ibb.co/FkfSpzcf/2.png'
     },
     {
       id: 3,
       name: 'Embassy of Sweden',
       url: 'https://www.swedenabroad.se/en/embassies/bangladesh-dhaka/about-us/vacancies/#',
-      logo: '../public/emb/3.png'
+      logo: 'https://i.ibb.co/s9PMmbQG/3.png'
     },
     {
       id: 4,
       name: 'Embassy of Switzerland',
       url: 'https://www.eda.admin.ch/countries/bangladesh/en/home/news/open-job-vacancies.html',
-      logo: '../public/emb/4.png'
+      logo: 'https://i.ibb.co/Pst4QK0j/4.png'
     },
     {
       id: 5,
       name: 'Embassy of China',
       url: 'http://bd.china-embassy.gov.cn/eng/sgxx/',
-      logo: '../public/emb/5.png'
+      logo: 'https://i.ibb.co/TBh8sHNc/5.png'
     },
     {
       id: 6,
       name: 'Embassy of France',
       url: 'https://bd.ambafrance.org/Job-Offer-at-Agence-francaise-de-developpement-AFD',
-      logo: '../public/emb/6.png'
+      logo: 'https://i.ibb.co/hxpT4922/6.png'
     },
     {
       id: 7,
       name: 'Embassy of Indonesia',
       url: 'https://kemlu.go.id/dhaka',
-      logo: '../public/emb/7.png'
+      logo: 'https://i.ibb.co/2Q8cSKR/7.png'
     },
     {
       id: 8,
       name: 'Embassy of Italy',
       url: 'https://ambdhaka.esteri.it/en/news/dall_ambasciata/2024/02/recruitment-notice/',
-      logo: '../public/emb/8.png'
+      logo: 'https://i.ibb.co/bgf9ZvHf/8.png'
     },
     {
       id: 9,
       name: 'Embassy of Korea',
       url: 'https://overseas.mofa.go.kr/bd-en/brd/m_2124/view.do?seq=760021',
-      logo: '../public/emb/9.png'
+      logo: 'https://i.ibb.co/9mFQv4qZ/9.png'
     },
     {
       id: 10,
       name: 'Embassy of Philippines',
       url: 'https://dhakape.dfa.gov.ph/advisories',
-      logo: '../public/emb/10.jpg'
+      logo: 'https://i.ibb.co/qF22HfPJ/10.jpg'
     },
     {
       id: 11,
       name: 'Australian High Commission',
       url: 'https://bangladesh.embassy.gov.au/daca/JobVacancies.html',
-      logo: '../public/emb/11.png'
+      logo: 'https://i.ibb.co/60p2RWYc/11.png'
     },
     {
       id: 12,
       name: 'Embassy of United States',
       url: 'https://bd.usembassy.gov/jobs/',
-      logo: '../public/emb/12.png'
+      logo: 'https://i.ibb.co/chXRGX1m/12.png'
     },
     {
       id: 13,
       name: 'Royal Bhutanese Embassy',
       url: 'https://www.mfa.gov.bt/rbedhaka/vacancy-announcement/',
-      logo: '../public/emb/13.png'
+      logo: 'https://i.ibb.co/39z0NbMF/13.png'
     },
     {
       id: 14,
@@ -92,49 +92,49 @@ function EmbassyJobs() {
       id: 15,
       name: 'Embassy of Denmark',
       url: 'https://bangladesh.um.dk/en/about-us/job-opportunities',
-      logo: '../public/emb/14.jpg'
+      logo: 'https://i.ibb.co/mVnz7JVM/14.jpg'
     },
     {
       id: 16,
       name: 'Embassy of Netherlands',
       url: 'https://www.netherlandsandyou.nl/web/bangladesh/about-us',
-      logo: '../public/emb/15.jpg'
+      logo: 'https://i.ibb.co/LDjx1sjP/15.jpg'
     },
     {
       id: 17,
       name: 'Royal Norwegian Embassy',
       url: 'https://www.norway.no/en/bangladesh/norway-bangladesh/vacancies/',
-      logo: '../public/emb/16.png'
+      logo: 'https://i.ibb.co/gMRFRfRK/16.png'
     },
     {
       id: 18,
       name: 'Royal Thai Embassy',
       url: 'https://dhaka.thaiembassy.org/en/page/cate-7842-annoucements?menu=5d83296215e39c2540006a0e',
-      logo: '../public/emb/17.png'
+      logo: 'https://i.ibb.co/dshVZRF1/17.png'
     },
     {
       id: 19,
       name: 'Embassy of South Korea',
       url: 'https://overseas.mofa.go.kr/bd-en/brd/m_2124/view.do?seq=760021',
-      logo: '../public/emb/18.jpg'
+      logo: 'https://i.ibb.co/b5C7Zfsp/18.jpg'
     },
     {
       id: 20,
       name: 'Embassy of Vietnam',
       url: 'https://vnembassy-dhaka.mofa.gov.vn/en-us/embassy/Notice%20from%20the%20Embassy/Pages/default.aspx',
-      logo: '../public/emb/19.png'
+      logo: 'https://i.ibb.co/W4Lgvxx6/19.png'
     },
     {
       id: 21,
       name: 'Embassy of Argentina',
       url: 'https://ebang.cancilleria.gob.ar/es/job-opportunity-embassy',
-      logo: '../public/emb/20.jpg'
+      logo: 'https://i.ibb.co/67rc57q8/20.jpg'
     },
     {
       id: 22,
       name: 'Embassy of Canada',
       url: 'https://www.jobbank.gc.ca/jobsearch/',
-      logo: '../public/emb/21.png'
+      logo: 'https://i.ibb.co/p6wmNpTb/21.png'
     }
   ];
 

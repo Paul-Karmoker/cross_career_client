@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 
-const BASE_URL = 'https://backend-server-deploy.onrender.com/api/v1/auth/';
+const BASE_URL = 'http://api.crosscareers.com/api/v1/auth';
 
 export const authApi = createApi({
   reducerPath: 'authApi',

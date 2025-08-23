@@ -1,4 +1,3 @@
-import React from 'react';
 import PPTGenerator from './pptmaker';
 import Navbar from '../Components/navbar'; 
 import Footer from '../Components/footer';

@@ -1,0 +1,51 @@
+name: Deploy Frontend to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Step 3: Install dependencies & build project
+      - name: Install dependencies & build
+        run: |
+          npm install
+          npm run build
+
+      # Step 4: Copy build files to VPS using SSH
+      - name: Deploy to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ""       # যদি key passphrase থাকে, এখানে দাও
+          source: "dist/*"
+          target: ${{ secrets.APP_PATH }}
+
+      # Step 5: Restart Node/PM2 (যদি backend থাকে)
+      - name: Restart PM2 process
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ""
+          script: |
+            cd ${{ secrets.APP_PATH }}
+            pm2 stop all || true
+            pm2 start npm --name "crosscareer" -- start

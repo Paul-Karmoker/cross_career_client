@@ -1,15 +1,17 @@
+/* eslint-disable no-undef */
+// src/store.js
 import { configureStore } from '@reduxjs/toolkit';
-import { authApi } from '../src/context/authApi';
+import { authApi } from './context/authApi';
+import { resumeApi } from './context/resumeApi';
+import { writtenTestApi } from './context/writtenTestApi';
+import resumeReducer from './context/resumeSlice';
 
-// Optional: Add a logger middleware for debugging in development
 const loggerMiddleware = (store) => (next) => (action) => {
-  // eslint-disable-next-line no-undef
   if (process.env.NODE_ENV === 'development') {
     console.log('Dispatching action:', action);
     console.log('State before:', store.getState());
   }
   const result = next(action);
-  // eslint-disable-next-line no-undef
   if (process.env.NODE_ENV === 'development') {
     console.log('State after:', store.getState());
   }
@@ -19,15 +21,24 @@ const loggerMiddleware = (store) => (next) => (action) => {
 export const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
+    [resumeApi.reducerPath]: resumeApi.reducer,
+    [writtenTestApi.reducerPath]: writtenTestApi.reducer,
+    resume: resumeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore non-serializable values in RTK Query actions
-        ignoredActions: ['authApi/executeQuery/fulfilled', 'authApi/executeMutation/fulfilled'],
+        ignoredActions: [
+          'authApi/executeQuery/fulfilled',
+          'authApi/executeMutation/fulfilled',
+        ],
         ignoredPaths: ['authApi.queries', 'authApi.mutations'],
       },
-    }).concat(authApi.middleware, loggerMiddleware),
-  // eslint-disable-next-line no-undef
+    }).concat(
+      authApi.middleware,
+      resumeApi.middleware,
+      writtenTestApi.middleware,   // ✅ FIX: Add this line
+      loggerMiddleware
+    ),
   devTools: process.env.NODE_ENV !== 'production',
 });

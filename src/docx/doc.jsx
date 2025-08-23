@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import { useForm } from 'react-hook-form';
@@ -18,7 +18,7 @@ const ContentGenerator = () => {
   const fileInputRef = useRef(null);
   const pasteAreaRef = useRef(null);
 
-  const { register, handleSubmit, control, watch, reset } = useForm({
+  const { register, handleSubmit, watch, reset } = useForm({
     defaultValues: {
       contentType: 'blog',
       tone: 'professional',
@@ -120,7 +120,7 @@ const ContentGenerator = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('https://backend-server-deploy.onrender.com/doc/generate-content', {
+      const response = await axios.post('http://api.crosscareers.com/doc/generate-content', {
         ...data,
         sourceText: fileContent || data.userInput,
       });
@@ -145,7 +145,7 @@ const ContentGenerator = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('https://backend-server-deploy.onrender.com/doc/generate-docx', {
+      const response = await axios.post('http://api.crosscareers.com/doc/generate-docx', {
         content: previewContent,
         documentType: watch('contentType'),
         style: watch('tone')

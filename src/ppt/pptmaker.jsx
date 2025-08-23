@@ -5,7 +5,6 @@ import { saveAs } from 'file-saver';
 import { FiUpload, FiCopy, FiDownload } from 'react-icons/fi';
 import { FaYoutube, FaFilePdf, FaFileWord } from 'react-icons/fa';
 import { toast, Toaster } from 'react-hot-toast';
-import { PDFDocument } from 'pdf-lib';
 import mammoth from 'mammoth';
 
 const PPTGenerator = () => {
@@ -16,7 +15,7 @@ const PPTGenerator = () => {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const fileInputRef = useRef(null);
 
-  const { register, handleSubmit, watch } = useForm({
+  const { register, handleSubmit } = useForm({
     defaultValues: {
       slideCount: 10,
       design: 'modern',
@@ -26,10 +25,6 @@ const PPTGenerator = () => {
     }
   });
 
-  const designSelected = watch('design');
-  const includeCharts = watch('includeCharts');
-  const includeTables = watch('includeTables');
-  const includeIcons = watch('includeIcons');
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -58,6 +53,7 @@ const PPTGenerator = () => {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const data = new Uint8Array(arrayBuffer);
+      // eslint-disable-next-line no-undef
       const pdfData = await pdf(data);
       setContent(pdfData.text);
       toast.dismiss(toastId);
@@ -116,7 +112,7 @@ const PPTGenerator = () => {
     const toastId = toast.loading('Generating your presentation...');
 
     try {
-      const response = await axios.post('https://backend-server-deploy.onrender.com/ppt/generate', {
+      const response = await axios.post('http://api.crosscareers.com/api/v1/ppt/generate', {
         content,
         slideCount: data.slideCount,
         design: data.design,
@@ -148,7 +144,7 @@ const PPTGenerator = () => {
     const toastId = toast.loading('Preparing PPTX download...');
     try {
       const response = await axios.get(
-        `https://backend-server-deploy.onrender.com/ppt/download/pptx/${presentationId}`,
+        `http://api.crosscareers.com/api/v1/ppt/download/pptx/${presentationId}`,
         { responseType: 'blob' }
       );
       

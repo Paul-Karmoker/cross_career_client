@@ -25,15 +25,15 @@ export default function LoginPage() {
   }, [error]);
 
   const handleLoginGoogle = () => {
-    window.location.href = googleAuthUrl || 'http://localhost:4001/api/v1/auth/google';
+    window.location.href = googleAuthUrl || 'https://backend-server-deploy.onrender.com/api/v1/auth/google';
   };
 
   const handleLoginFacebook = () => {
-    window.location.href = facebookAuthUrl || 'http://localhost:4001/api/v1/auth/facebook';
+    window.location.href = facebookAuthUrl || 'https://backend-server-deploy.onrender.com/api/v1/auth/facebook';
   };
 
   const handleLoginLinkedIn = () => {
-    window.location.href = linkedInAuthUrl || 'http://localhost:4001/api/v1/auth/linkedin';
+    window.location.href = linkedInAuthUrl || 'https://backend-server-deploy.onrender.com/api/v1/auth/linkedin';
   };
 
   const handleSubmit = async (e) => {
@@ -161,12 +161,12 @@ export default function LoginPage() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
-                <div className="relative flex justify-center text-sm">
+                <div className="relative flex justify-center text-sm hidden">
                   <span className="px-2 bg-white text-gray-500">Or continue with</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="grid grid-cols-3 gap-3 mb-6 hidden">
                 <motion.button
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.95 }}

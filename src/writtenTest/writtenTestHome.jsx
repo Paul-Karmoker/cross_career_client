@@ -2,16 +2,15 @@
 import React from 'react'
 import Navbar from '../Components/navbar'
 import Footer from '../Components/footer'
-import Qa from './qa'
-
-function qahome() {
+import WrittenTest from './WrittenTest'
+function writtenTestHome() {
   return (
     <>
-    <Navbar/>
-    <Qa/>
-    <Footer/>
+          <Navbar />
+          <WrittenTest />
+          <Footer/>
     </>
   )
 }
 
-export default qahome
+export default writtenTestHome

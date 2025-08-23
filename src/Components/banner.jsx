@@ -10,32 +10,32 @@ function Banner() {
   const advertisements = [
     {
       id: 0,
-      image: 'https://i.ibb.co/v4Hgnrmy/5.png',
+      image: 'https://i.ibb.co/HkMRZnb/6.jpg',
       alt: 'Advertisement 2',
     },
     {
       id: 1,
-      image: 'https://i.ibb.co/nsmYMBCZ/6.png',
+      image: 'https://i.ibb.co/7x4CmDy8/1.jpg',
       alt: 'Advertisement 1',
     },
     {
       id: 2,
-      image: 'https://i.ibb.co/Ngbwnz50/3.png',
+      image: 'https://i.ibb.co/KxyNXQfz/2.jpg',
       alt: 'Advertisement 2',
     },
     {
       id: 3,
-      image: 'https://i.ibb.co/4R5NZZ8j/1.png',
+      image: 'https://i.ibb.co/ZpXSHBPj/3.jpg',
       alt: 'Advertisement 3',
     },
     {
       id: 4,
-      image: 'https://i.ibb.co/v6BKbKsJ/2.png',
+      image: 'https://i.ibb.co/ZpHcHMXM/4.jpg',
       alt: 'Advertisement 1',
     },
     {
       id: 5,
-      image: 'https://i.ibb.co/4R5NZZ8j/1.png',
+      image: 'https://i.ibb.co/Z6VmScGF/5.jpg',
       alt: 'Advertisement 1',
     },
   ];
@@ -44,7 +44,7 @@ function Banner() {
     <div className="max-w-screen-2xl container mx-auto md:px-20 px-4 flex flex-col md:flex-row mt-10 -mb-4">
       <div className="w-full md:w-1/2 mt-4 md:mt-14">
         <div>
-          <h1 className="text-5xl font-bold mt-20 md:mt-8" ><img src="https://i.ibb.co/279KyNKC/Logo.gif" alt="banner" /></h1>
+          <h1 className="text-5xl font-bold mt-20 md:mt-8" ><img src="https://i.ibb.co/Y75Y5NSb/banner.gif" alt="banner" /></h1>
           <br />
           <p className="text-2xl font-bold font-serif text-foreground-600 text-center -mt-2">
             &quot;<span className="text-green-700">Empowering </span> Future Leaders in the Development &amp; Humanitarian Sector.&quot;

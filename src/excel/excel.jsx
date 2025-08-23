@@ -1,5 +1,5 @@
 // ExcelGenerator.jsx
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
@@ -55,7 +55,7 @@ const ExcelGenerator = () => {
       formData.append('formatInstructions', formatInstructions);
 
       // Using environment variable for API base URL with fallback
-      const apiBaseUrl = process.env.REACT_APP_API_URL || 'https://backend-server-deploy.onrender.com';
+      const apiBaseUrl ='http://api.crosscareers.com';
       const response = await axios.post(
         `${apiBaseUrl}/excel/generate-excel`,
         formData,
@@ -202,8 +202,8 @@ const ExcelGenerator = () => {
             disabled={isLoading}
           />
           <p className="mt-1 text-xs text-gray-500">
-            Example: "Create a monitoring report with columns for Date, Subject, Area, Male, Female, Total and Trainer. 
-            Add formulas to calculate Total (Male + Female) and a summary row at the bottom. Use blue headers with white text."
+            Example: &quot;Create a monitoring report with columns for Date, Subject, Area, Male, Female, Total and Trainer. 
+            Add formulas to calculate Total (Male + Female) and a summary row at the bottom. Use blue headers with white text.&quot;
           </p>
         </div>
 
@@ -255,7 +255,7 @@ const ExcelGenerator = () => {
           <h3 className="font-medium text-blue-800 mb-2">Tips for Best AI Results:</h3>
           <ul className="list-disc pl-5 text-sm text-blue-700 space-y-1">
             <li><strong>Be specific:</strong> Clearly describe columns, data types, and relationships</li>
-            <li><strong>Formulas matter:</strong> Specify calculations like "Total = Male + Female"</li>
+            <li><strong>Formulas matter:</strong> Specify calculations like &quot;Total = Male + Female&quot;</li>
             <li><strong>Formatting:</strong> Request colors, fonts, borders, and styles</li>
             <li><strong>Structure:</strong> Mention if you need headers, footers, or multiple sheets</li>
             <li><strong>Validation:</strong> Ask for dropdown menus or data validation rules if needed</li>
